@@ -72,60 +72,6 @@ public class UserApplication {
     echoClient.closeSocket();
     exit(0);
 
-/*
-
-    // ============================ OBD Client ==========================================
-    System.out.println("Starting OBD.");
-
-    try {
-      OBDClient obdClient = new OBDClient(obdCode, hostName, hostPort, localPort);
-      obdClient.saveTelemetry(180);
-    } catch (SocketException e) {
-      e.printStackTrace();
-    } catch (UnknownHostException e) {
-      e.printStackTrace();
-    }
-    System.out.println("OBD finished!\n");
-
-    // ============================ IthakicopterClient Client ==========================================
-    System.out.println("Starting Ithakicopter.");
-
-    IthakicopterClient ithakicopter = null;
-    try {
-      ithakicopter = new IthakicopterClient(ithakicopterCode, hostName, hostPort);
-      ithakicopter.saveTelemetry(20);
-    } catch (UnknownHostException | SocketException e) {
-      e.printStackTrace();
-      exit(-1);
-    }
-
-    System.out.println("Ithakicopter finished!\n");
-
-    exit(0);
-*/
-
-    // ============================ Audio Client ==========================================
-    AudioClient audioClient = null;
-    try {
-      audioClient = new AudioClient(audioCode, hostName, hostPort, localPort);
-    } catch (UnknownHostException | SocketException e) {
-      e.printStackTrace();
-      exit(-1);
-    }
-
-
-    try {
-      audioClient.saveTrack(2, 5, Codec.DPCM, "testAudioName");
-      audioClient.saveFrequencies(30, "freqT30s");
-//      audioClient.playTrack(2, 15, Codec.DPCM);
-//      audioClient.playFrequencies(5);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    exit(0);
-
-
     // ============================ Image Client ==========================================
     ImageClient imageClient = null;
     try {
@@ -157,6 +103,59 @@ public class UserApplication {
     } catch (IOException e) {
       e.printStackTrace();
     }
+
+    // ============================ Audio Client ==========================================
+    AudioClient audioClient = null;
+    try {
+      audioClient = new AudioClient(audioCode, hostName, hostPort, localPort);
+    } catch (UnknownHostException | SocketException e) {
+      e.printStackTrace();
+      exit(-1);
+    }
+
+
+    try {
+      audioClient.saveFrequencies(30, "");
+      audioClient.saveTrack(2, 30, Codec.DPCM,"");
+      audioClient.saveTrack(2, 30, Codec.AQDPCM, "");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    exit(0);
+
+
+    /*
+
+    // ============================ OBD Client ==========================================
+    System.out.println("Starting OBD.");
+
+    try {
+      OBDClient obdClient = new OBDClient(obdCode, hostName, hostPort, localPort);
+      obdClient.saveTelemetry(180);
+    } catch (SocketException e) {
+      e.printStackTrace();
+    } catch (UnknownHostException e) {
+      e.printStackTrace();
+    }
+    System.out.println("OBD finished!\n");
+
+    // ============================ IthakicopterClient Client ==========================================
+    System.out.println("Starting Ithakicopter.");
+
+    IthakicopterClient ithakicopter = null;
+    try {
+      ithakicopter = new IthakicopterClient(ithakicopterCode, hostName, hostPort);
+      ithakicopter.saveTelemetry(20);
+    } catch (UnknownHostException | SocketException e) {
+      e.printStackTrace();
+      exit(-1);
+    }
+
+    System.out.println("Ithakicopter finished!\n");
+
+    exit(0);
+*/
   }
 
 

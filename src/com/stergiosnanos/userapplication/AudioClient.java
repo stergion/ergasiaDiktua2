@@ -3,11 +3,9 @@ package com.stergiosnanos.userapplication;
 import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,6 +24,12 @@ public class AudioClient {
   private ByteBuffer audioBuffer;
   private int sampleRate;
   private String directory;
+
+  // Arrays for saving diffs, mu, beta of audio
+  private int[] diffsArray = null;
+  private int[] musArray = null;
+  private int[] betasArray = null;
+  private int packetIndex = 0;
 
 //  TODO CLEAN UP CODE
 
@@ -66,6 +70,8 @@ public class AudioClient {
 
       D2 = d2 * beta;
       D1 = d1 * beta;
+      diffsArray[packetIndex*128*2 + i*2 ] = D1;
+      diffsArray[packetIndex*128*2 + i*2 + 1] = D2;
 
       n1 = D1 + lastNibble.get();
       // clip value
@@ -113,6 +119,9 @@ public class AudioClient {
     arr[1] = data[2];
     beta = ByteBuffer.wrap(arr).getShort(); // big-endian by default
 
+    musArray[packetIndex] = mu;
+    betasArray[packetIndex] = beta;
+
     byte[] decoded = new byte[(length - offset) * 2 * codec.getQ() / 8];
 
     for (int i = offset; i < length; i++) {
@@ -124,6 +133,8 @@ public class AudioClient {
 
       D2 = d2 * beta;
       D1 = d1 * beta;
+      diffsArray[packetIndex*128*2 + i*2 ] = D1; // todo find a better way accessing diffsArray
+      diffsArray[packetIndex*128*2 + i*2 + 1] = D2;
 
       n1 = D1 + lastNibble.get();
 
@@ -156,7 +167,6 @@ public class AudioClient {
 
   private void getAudio(String options) throws IOException {
     String request = audioCode + options;
-//    System.out.println(request);
 
     DatagramPacket packetSent = new DatagramPacket(request.getBytes(), request.getBytes().length, address, hostPort);
     socket.send(packetSent);
@@ -169,7 +179,9 @@ public class AudioClient {
   }
 
   private void getDPCM() throws IOException {
-    System.out.println("getting DPCM");
+    System.out.println("getting DPCM...");
+
+    diffsArray = new int[packetNum * 128 * 2];
 
     DatagramPacket packetRcv = new DatagramPacket(buffer, buffer.length);
 
@@ -180,10 +192,18 @@ public class AudioClient {
 
       audioBuffer.put(decodeDCPM(packetRcv.getData(), packetRcv.getLength(), lastNibble));
     }
+
+    // todo saveArrayAsCSV()
   }
+
+  // todo private saveArrayAsCSV()
 
   private void getAQDPCM() throws IOException {
     System.out.println("getting AQ-DPCM");
+
+    diffsArray = new int[packetNum * 128 * 2];
+    musArray = new int[packetNum];
+    betasArray = new int[packetNum];
 
     DatagramPacket packetRcv = new DatagramPacket(buffer, buffer.length);
 
@@ -194,7 +214,11 @@ public class AudioClient {
 
       audioBuffer.put(decodeAQ_DCPM(packetRcv.getData(), packetRcv.getLength(), lastNibble));
     }
+
+    // todo saveArrayAsCSV()
   }
+
+  // todo private saveArrayAsCSV()
 
   private void playAudio() {
     AudioFormat audioFormat = new AudioFormat(sampleRate, codec.getQ(), 1, true, false);
@@ -309,7 +333,7 @@ public class AudioClient {
     this.codec = codec;
   }
 
-  private void saveAudio(String fileName) throws IOException {
+  private void saveAudioAsWAVE(String fileName) throws IOException {
     Files.createDirectories(Paths.get(directory));
     File file = new File(directory + "/" + fileName + ".wav");
 
@@ -331,7 +355,7 @@ public class AudioClient {
 
     getAudio(codec.getNameAsServerOption() + "L" + String.format("%02d", trackNumber) + "F" + String.format("%03d", packetNum));
     audioBuffer.flip();
-    saveAudio(fileName);
+    saveAudioAsWAVE(String.join("_", fileName, "track" + trackNumber, duration + "s"));
   }
 
   public void saveFrequencies(int duration,String fileName) throws IOException {
@@ -341,7 +365,7 @@ public class AudioClient {
 
     getAudio(codec.getNameAsServerOption() + "T" + String.format("%03d", packetNum));
     audioBuffer.flip();
-    saveAudio(fileName);
+    saveAudioAsWAVE(String.join("_", fileName, "frequencies", duration + "s"));
   }
 
   public void closeSocket() {
