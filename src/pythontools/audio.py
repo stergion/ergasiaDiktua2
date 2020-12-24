@@ -29,7 +29,7 @@ def plot_waveplot_detailed(file_path, sec):
 
 
 def plot_waveplot(file_path, sec):
-    if (sec < 0.5):
+    if sec < 0.5:
         plot_waveplot_detailed(file_path, sec)
     else:
         plot_waveplot_regular(file_path, sec)
