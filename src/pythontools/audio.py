@@ -55,5 +55,5 @@ if __name__ == '__main__':
     plot_waveplot("./audioClient/freqT30s.wav", 0.2)
     stft_plot("./audioClient/freqT30s.wav")
 
-    plot_waveplot("./testAudioName.wav", 5)
-    stft_plot("./testAudioName.wav")
+    plot_waveplot("./audioClient/testAudioName.wav", 5)
+    stft_plot("./audioClient/testAudioName.wav")

@@ -1,13 +1,18 @@
 package com.stergiosnanos.userapplication;
 
+import com.opencsv.CSVWriter;
+
 import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AudioClient {
@@ -187,16 +192,14 @@ public class AudioClient {
 
     AtomicInteger lastNibble = new AtomicInteger(0);
 
-    for (int i = 0; i < packetNum; i++) {
+    for (packetIndex = 0; packetIndex < packetNum; packetIndex++) {
       socket.receive(packetRcv);
 
       audioBuffer.put(decodeDCPM(packetRcv.getData(), packetRcv.getLength(), lastNibble));
     }
 
-    // todo saveArrayAsCSV()
+    saveArrayAsCSV("DPCM_diffs", diffsArray, new String[] {"diffs"});
   }
-
-  // todo private saveArrayAsCSV()
 
   private void getAQDPCM() throws IOException {
     System.out.println("getting AQ-DPCM");
@@ -209,16 +212,27 @@ public class AudioClient {
 
     AtomicInteger lastNibble = new AtomicInteger(0);
 
-    for (int i = 0; i < packetNum; i++) {
+    for (packetIndex = 0; packetIndex < packetNum; packetIndex++) {
       socket.receive(packetRcv);
 
       audioBuffer.put(decodeAQ_DCPM(packetRcv.getData(), packetRcv.getLength(), lastNibble));
     }
 
-    // todo saveArrayAsCSV()
+    saveArrayAsCSV("AQDPCM_diffs", diffsArray, new String[] {"diffs"});
+    saveArrayAsCSV("AQDPCM_mus", musArray, new String[] {"mus"});
+    saveArrayAsCSV("AQDPCM_betas", betasArray, new String[] {"betas"});
   }
 
-  // todo private saveArrayAsCSV()
+  private void saveArrayAsCSV(String fileName, int[] intsArray, String[] header) throws IOException {
+    Files.createDirectories(Paths.get(directory));
+    File file = new File(directory + "/" + fileName + ".csv");
+
+    try (CSVWriter writer = new CSVWriter(new FileWriter(file))) {
+      writer.writeNext(header);
+      // Convert int[] to String[] and then write it with writeNext()
+      writer.writeNext(Arrays.stream(intsArray).mapToObj(String::valueOf).toArray(String[]::new));
+    }
+  }
 
   private void playAudio() {
     AudioFormat audioFormat = new AudioFormat(sampleRate, codec.getQ(), 1, true, false);
