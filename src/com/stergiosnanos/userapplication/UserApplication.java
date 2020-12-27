@@ -70,7 +70,7 @@ public class UserApplication {
     }
 
     echoClient.closeSocket();
-    exit(0);
+
 
     // ============================ Image Client ==========================================
     ImageClient imageClient = null;
@@ -104,6 +104,9 @@ public class UserApplication {
       e.printStackTrace();
     }
 
+    imageClient.closeSocket();
+
+
     // ============================ Audio Client ==========================================
     AudioClient audioClient = null;
     try {
@@ -122,10 +125,7 @@ public class UserApplication {
       e.printStackTrace();
     }
 
-    exit(0);
-
-
-    /*
+    audioClient.closeSocket();
 
     // ============================ OBD Client ==========================================
     System.out.println("Starting OBD.");
@@ -133,12 +133,14 @@ public class UserApplication {
     try {
       OBDClient obdClient = new OBDClient(obdCode, hostName, hostPort, localPort);
       obdClient.saveTelemetry(180);
+      obdClient.closeSocket();
     } catch (SocketException e) {
       e.printStackTrace();
     } catch (UnknownHostException e) {
       e.printStackTrace();
     }
     System.out.println("OBD finished!\n");
+
 
     // ============================ IthakicopterClient Client ==========================================
     System.out.println("Starting Ithakicopter.");
@@ -151,11 +153,12 @@ public class UserApplication {
       e.printStackTrace();
       exit(-1);
     }
-
+    ithakicopter.closeSocket();
     System.out.println("Ithakicopter finished!\n");
 
+
     exit(0);
-*/
+
   }
 
 
