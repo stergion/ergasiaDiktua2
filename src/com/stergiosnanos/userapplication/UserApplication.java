@@ -128,8 +128,8 @@ public class UserApplication {
     try {
 //     audioFile = audioClient.saveFrequencies(30, "");
 //      TimeUnit.SECONDS.sleep(5);
-      audioFile = audioClient.saveTrack(2, 30, Codec.DPCM, "");
-      TimeUnit.SECONDS.sleep(5);
+//      audioFile = audioClient.saveTrack(2, 30, Codec.DPCM, "");
+//      TimeUnit.SECONDS.sleep(5);
       audioFile = audioClient.saveTrack(2, 30, Codec.AQDPCM, "");
       TimeUnit.SECONDS.sleep(5);
     } catch (IOException e) {

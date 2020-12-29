@@ -138,8 +138,8 @@ public class AudioClient {
 
       D2 = d2 * beta;
       D1 = d1 * beta;
-      diffsArray[packetIndex*128*2 + i*2 ] = D1; // todo find a better way accessing diffsArray
-      diffsArray[packetIndex*128*2 + i*2 + 1] = D2;
+      diffsArray[packetIndex*128*2 + (i - offset)*2 ] = D1; // todo find a better way accessing diffsArray
+      diffsArray[packetIndex*128*2 + (i - offset)*2 + 1] = D2;
 
       n1 = D1 + lastNibble.get();
 
