@@ -3,12 +3,20 @@ package com.stergiosnanos.userapplication;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.System.exit;
 
 /* TODO Clean up code */
 
 public class UserApplication {
+
+  private static EchoClient echoClient;
+  private static ImageClient imageClient;
+  private static AudioClient audioClient;
+  private static OBDClient obdClient;
+  private static IthakicopterClient ithakicopter;
+
   public static void main(String[] args) {
 
     String hostName = "155.207.18.208";
@@ -22,7 +30,7 @@ public class UserApplication {
 
 
     // ============================ Echo Client ==========================================
-    EchoClient echoClient = null;
+    /*
     try {
       echoClient = new EchoClient(echoCode, hostName, hostPort, localPort);
     } catch (UnknownHostException | SocketException e) {
@@ -70,10 +78,10 @@ public class UserApplication {
     }
 
     echoClient.closeSocket();
-
+*/
 
     // ============================ Image Client ==========================================
-    ImageClient imageClient = null;
+    /*
     try {
       imageClient = new ImageClient(imageCode, hostName, hostPort, localPort);
     } catch (UnknownHostException | SocketException e) {
@@ -106,9 +114,9 @@ public class UserApplication {
 
     imageClient.closeSocket();
 
-
+*/
     // ============================ Audio Client ==========================================
-    AudioClient audioClient = null;
+    String audioFile;
     try {
       audioClient = new AudioClient(audioCode, hostName, hostPort, localPort);
     } catch (UnknownHostException | SocketException e) {
@@ -118,10 +126,15 @@ public class UserApplication {
 
 
     try {
-      audioClient.saveFrequencies(30, "");
-      audioClient.saveTrack(2, 30, Codec.DPCM,"");
-      audioClient.saveTrack(2, 30, Codec.AQDPCM, "");
+//     audioFile = audioClient.saveFrequencies(30, "");
+//      TimeUnit.SECONDS.sleep(5);
+      audioFile = audioClient.saveTrack(2, 30, Codec.DPCM, "");
+      TimeUnit.SECONDS.sleep(5);
+      audioFile = audioClient.saveTrack(2, 30, Codec.AQDPCM, "");
+      TimeUnit.SECONDS.sleep(5);
     } catch (IOException e) {
+      e.printStackTrace();
+    } catch (InterruptedException e) {
       e.printStackTrace();
     }
 
@@ -131,12 +144,10 @@ public class UserApplication {
     System.out.println("Starting OBD.");
 
     try {
-      OBDClient obdClient = new OBDClient(obdCode, hostName, hostPort, localPort);
+      obdClient = new OBDClient(obdCode, hostName, hostPort, localPort);
       obdClient.saveTelemetry(180);
       obdClient.closeSocket();
-    } catch (SocketException e) {
-      e.printStackTrace();
-    } catch (UnknownHostException e) {
+    } catch (SocketException | UnknownHostException e) {
       e.printStackTrace();
     }
     System.out.println("OBD finished!\n");
@@ -145,7 +156,6 @@ public class UserApplication {
     // ============================ IthakicopterClient Client ==========================================
     System.out.println("Starting Ithakicopter.");
 
-    IthakicopterClient ithakicopter = null;
     try {
       ithakicopter = new IthakicopterClient(ithakicopterCode, hostName, hostPort);
       ithakicopter.saveTelemetry(20);
@@ -153,7 +163,9 @@ public class UserApplication {
       e.printStackTrace();
       exit(-1);
     }
+
     ithakicopter.closeSocket();
+
     System.out.println("Ithakicopter finished!\n");
 
 

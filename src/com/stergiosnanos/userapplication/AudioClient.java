@@ -47,7 +47,7 @@ public class AudioClient {
     } else {
       socket = new DatagramSocket(localPort);
     }
-    socket.setSoTimeout(5000);    // set timeout 5 sec
+    socket.setSoTimeout(10000);    // set timeout 5 sec
 
     this.hostPort = hostPort;
     this.localPort = localPort;
@@ -193,6 +193,7 @@ public class AudioClient {
     AtomicInteger lastNibble = new AtomicInteger(0);
 
     for (packetIndex = 0; packetIndex < packetNum; packetIndex++) {
+      System.out.println("Packet DPCM:" + packetIndex);
       socket.receive(packetRcv);
 
       audioBuffer.put(decodeDCPM(packetRcv.getData(), packetRcv.getLength(), lastNibble));
@@ -217,10 +218,6 @@ public class AudioClient {
 
       audioBuffer.put(decodeAQ_DCPM(packetRcv.getData(), packetRcv.getLength(), lastNibble));
     }
-
-    saveArrayAsCSV("AQDPCM_diffs", diffsArray, new String[] {"diffs"});
-    saveArrayAsCSV("AQDPCM_mus", musArray, new String[] {"mus"});
-    saveArrayAsCSV("AQDPCM_betas", betasArray, new String[] {"betas"});
   }
 
   private void saveArrayAsCSV(String fileName, int[] intsArray, String[] header) throws IOException {
@@ -229,8 +226,10 @@ public class AudioClient {
 
     try (CSVWriter writer = new CSVWriter(new FileWriter(file))) {
       writer.writeNext(header);
+      for (Integer integer: intsArray) {
+        writer.writeNext(new String[] {integer.toString()});
+      }
       // Convert int[] to String[] and then write it with writeNext()
-      writer.writeNext(Arrays.stream(intsArray).mapToObj(String::valueOf).toArray(String[]::new));
     }
   }
 
@@ -362,24 +361,39 @@ public class AudioClient {
     }
   }
 
-  public void saveTrack(int trackNumber, int duration, Codec codec, String fileName) throws IOException {
+  public String saveTrack(int trackNumber, int duration, Codec codec, String fileName) throws IOException {
     setPlaybackDuration(duration);
     setCodec(codec);
     allocateAudioBuffer(codec);
 
+    String fName = String.join("_", fileName, codec.getName(), "track" + trackNumber, duration + "s");
+
     getAudio(codec.getNameAsServerOption() + "L" + String.format("%02d", trackNumber) + "F" + String.format("%03d", packetNum));
     audioBuffer.flip();
-    saveAudioAsWAVE(String.join("_", fileName, "track" + trackNumber, duration + "s"));
+    saveAudioAsWAVE(fName);
+
+    saveArrayAsCSV(fName +"_diffs", diffsArray, new String[] {"diffs"});
+    if (codec == Codec.AQDPCM) {
+      saveArrayAsCSV(fName + "_mus", musArray, new String[] {"mus"});
+      saveArrayAsCSV(fName + "_betas", betasArray, new String[] {"betas"});
+    }
+
+    return fName;
   }
 
-  public void saveFrequencies(int duration,String fileName) throws IOException {
+  public String saveFrequencies(int duration,String fileName) throws IOException {
     setPlaybackDuration(duration);
     setCodec(Codec.DPCM);
     allocateAudioBuffer(Codec.DPCM);
 
+    String fName = String.join("_", fileName, "frequencies", duration + "s");
+
     getAudio(codec.getNameAsServerOption() + "T" + String.format("%03d", packetNum));
     audioBuffer.flip();
-    saveAudioAsWAVE(String.join("_", fileName, "frequencies", duration + "s"));
+    saveAudioAsWAVE(fName);
+    saveArrayAsCSV( fName + "_diffs", diffsArray, new String[] {"diffs"});
+
+    return fName;
   }
 
   public void closeSocket() {

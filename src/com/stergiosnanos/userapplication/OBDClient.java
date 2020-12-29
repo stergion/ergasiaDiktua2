@@ -30,7 +30,7 @@ public class OBDClient {
     } else {
       this.socket = new DatagramSocket(localPort);
     }
-    socket.setSoTimeout(5000);    // set timeout 2 sec
+    socket.setSoTimeout(10000);    // set timeout 2 sec
 
     this.hostPort = hostPort;
     this.localPort = localPort;
@@ -50,7 +50,7 @@ public class OBDClient {
         socket.send(packetSend);
       } catch (IOException e) {
         e.printStackTrace();
-        System.err.println("Trying to send " + obd.toString().toLowerCase() + "paket");
+        System.err.println("Trying to send " + obd.toString().toUpperCase() + "paket");
       }
 
       try {
@@ -58,11 +58,11 @@ public class OBDClient {
       } catch (IOException e) {
         e.printStackTrace();
         System.err.println(obd.toString());
-        System.err.println("While trying to receive " + obd.toString().toLowerCase() + " paket");
+        System.err.println("While trying to receive " + obd.toString().toUpperCase() + " paket");
       }
 
       String[] strings = new String(packetRcv.getData(), packetRcv.getOffset(), packetRcv.getLength()).substring(6).split(" ");
-       stringBuilder.append("\t\t").append(obd.name()).append(" = ").append(getResponse(obd, strings)).append(obd.getUnits());
+      stringBuilder.append("\t\t").append(obd.name()).append(" = ").append(getResponse(obd, strings)).append(obd.getUnits());
     }
     return stringBuilder.toString();
   }
