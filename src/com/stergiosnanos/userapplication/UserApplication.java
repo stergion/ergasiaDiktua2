@@ -116,6 +116,7 @@ public class UserApplication {
 
 */
     // ============================ Audio Client ==========================================
+/*
     String audioFile;
     try {
       audioClient = new AudioClient(audioCode, hostName, hostPort, localPort);
@@ -126,11 +127,11 @@ public class UserApplication {
 
 
     try {
-//     audioFile = audioClient.saveFrequencies(30, "");
-//      TimeUnit.SECONDS.sleep(5);
-//      audioFile = audioClient.saveTrack(2, 30, Codec.DPCM, "");
-//      TimeUnit.SECONDS.sleep(5);
-      audioFile = audioClient.saveTrack(2, 30, Codec.AQDPCM, "");
+     audioFile = audioClient.saveFrequencies(30, "");
+      TimeUnit.SECONDS.sleep(5);
+      audioFile = audioClient.saveTrack(2, 30, Codec.DPCM, "");
+      TimeUnit.SECONDS.sleep(5);
+      audioFile = audioClient.saveTrack(2, 10, Codec.AQDPCM, "");
       TimeUnit.SECONDS.sleep(5);
     } catch (IOException e) {
       e.printStackTrace();
@@ -139,17 +140,19 @@ public class UserApplication {
     }
 
     audioClient.closeSocket();
+*/
 
     // ============================ OBD Client ==========================================
     System.out.println("Starting OBD.");
 
     try {
       obdClient = new OBDClient(obdCode, hostName, hostPort, localPort);
-      obdClient.saveTelemetry(180);
-      obdClient.closeSocket();
+//      obdClient.saveTelemetry(180);
+      obdClient.saveTelemetryAsCSV(20);
     } catch (SocketException | UnknownHostException e) {
       e.printStackTrace();
     }
+    obdClient.closeSocket();
     System.out.println("OBD finished!\n");
 
 
