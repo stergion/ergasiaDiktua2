@@ -143,7 +143,7 @@ public class UserApplication {
 */
 
     // ============================ OBD Client ==========================================
-    System.out.println("Starting OBD.");
+    /*System.out.println("Starting OBD.");
 
     try {
       obdClient = new OBDClient(obdCode, hostName, hostPort, localPort);
@@ -154,14 +154,15 @@ public class UserApplication {
     }
     obdClient.closeSocket();
     System.out.println("OBD finished!\n");
-
+*/
 
     // ============================ IthakicopterClient Client ==========================================
     System.out.println("Starting Ithakicopter.");
 
     try {
       ithakicopter = new IthakicopterClient(ithakicopterCode, hostName, hostPort);
-      ithakicopter.saveTelemetry(20);
+//      ithakicopter.saveTelemetry(20);
+      ithakicopter.saveTelemetryAsCSV(20);
     } catch (UnknownHostException | SocketException e) {
       e.printStackTrace();
       exit(-1);

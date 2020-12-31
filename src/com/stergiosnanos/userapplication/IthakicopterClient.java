@@ -1,5 +1,7 @@
 package com.stergiosnanos.userapplication;
 
+import com.opencsv.CSVWriter;
+
 import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
@@ -8,6 +10,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import static java.lang.System.currentTimeMillis;
@@ -40,6 +44,22 @@ public class IthakicopterClient {
     return new String(packetRcv.getData(), packetRcv.getOffset(), packetRcv.getLength());
   }
 
+  /* Return String[] with of length=6 containing telemetry data
+   * String[time, LMOTOR, RMOTOR, ALTITUDE, TEMPERATURE, PRESSURE]
+   * */
+  public String[] parseTelemetry(String telemetry) {
+    List<String> parsedTelemetry = new ArrayList<>(6);
+    String[] strings = telemetry.split(" ");
+
+    parsedTelemetry.add(strings[2]);
+    for (int i = 3; i < strings.length - 1; i++) {
+      parsedTelemetry.add(strings[i].split("=")[1]);
+    }
+//    parsedTelemetry.forEach(System.out::println);
+
+    return parsedTelemetry.toArray(new String[0]);
+  }
+
   public void saveTelemetry(int sec) {
     long startTime, duration;
 
@@ -61,11 +81,45 @@ public class IthakicopterClient {
     }
   }
 
+  //  todo saveTelemetryAsCSV
+  public String saveTelemetryAsCSV(int sec) {
+    long startTime, duration;
+    String filePath = null;
+
+    try {
+      Files.createDirectories(Paths.get(directory));
+      String fileName = getFileName("telemetry");
+      filePath = directory + "/" + fileName + ".csv";
+      File file = new File(filePath);
+
+      try (CSVWriter writer = new CSVWriter(new FileWriter(file))) {
+        writer.writeNext(new String[]{
+                "time",
+                "LMOTOR",
+                "RMOTOR",
+                "ALTITUDE",
+                "TEMPERATURE",
+                "PRESSURE"});
+
+        startTime = currentTimeMillis();
+        do {
+//          System.out.println("Ithakicopter: Packet received!");
+          writer.writeNext(parseTelemetry(getTelemetry()));
+          duration = currentTimeMillis() - startTime;
+        } while (duration < sec * 1000L);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    return filePath;
+  }
+
   private String getFileName(String name) {
     var dateTime = LocalDateTime.now();
-    return "/" + String.join("_",dateTime.format(DateTimeFormatter.BASIC_ISO_DATE),
-                                            "T" + dateTime.format(DateTimeFormatter.ofPattern("HHmm")),
-                                            name.toUpperCase(Locale.ROOT), ithakicopterCode);
+    return "/" + String.join("_", dateTime.format(DateTimeFormatter.BASIC_ISO_DATE),
+            "T" + dateTime.format(DateTimeFormatter.ofPattern("HHmm")),
+            name.toUpperCase(Locale.ROOT), ithakicopterCode);
   }
 
   public void closeSocket() {
