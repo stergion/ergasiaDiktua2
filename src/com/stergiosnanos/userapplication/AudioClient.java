@@ -198,8 +198,6 @@ public class AudioClient {
 
       audioBuffer.put(decodeDCPM(packetRcv.getData(), packetRcv.getLength(), lastNibble));
     }
-
-    saveArrayAsCSV("DPCM_diffs", diffsArray, new String[] {"diffs"});
   }
 
   private void getAQDPCM() throws IOException {

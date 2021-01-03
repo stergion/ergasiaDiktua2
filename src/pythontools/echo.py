@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # Plots
     plt.figure(num=1, figsize=(13.07, 5.35))
     plt.plot(latencies)
-    plt.suptitle('Echo Response Time' + "(" + suptitle_comment + ")", fontsize=20)
+    plt.suptitle('[' + rt_plot_name + '] ' + 'Echo Response Time' + "(" + suptitle_comment + ")", fontsize=20)
     plt.title(label=echo_code + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
               fontweight='bold')
     plt.xlabel("Packet", labelpad=20, fontsize=16)
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     packets_per_sec_rolling_df.plot(figsize=(13.07, 5.35), legend=False)
     # plt.suptitle('Echo Response Time', fontsize=20)
-    plt.gcf().suptitle("Throughput" + "(" + suptitle_comment + ")", y=0.98, fontsize=20)
+    plt.gcf().suptitle('[' + rolling_plot_name + '] ' + "Throughput" + "(" + suptitle_comment + ")", y=0.98, fontsize=20)
     plt.title(label=echo_code + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
               fontweight='bold')
     plt.xlabel("Time (s)", labelpad=20, fontsize=16)
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     # Histograms
     plt.figure(num=2, figsize=(13.07, 5.35))
     plt.hist(latencies, rwidth=0.95)
-    plt.suptitle('Echo Frequencies of RTs' + "(" + suptitle_comment + ")", fontsize=20)
+    plt.suptitle('[' + rt_hist_name + '] ' + 'Echo Frequencies of RTs' + "(" + suptitle_comment + ")", fontsize=20)
     plt.title(label=echo_code + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
               fontweight='bold')
     plt.ylabel("RT (ms)", labelpad=20, fontsize=16)
@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     packets_per_sec_rolling_df.hist(figsize=(13.07, 5.35), legend=False)
     # plt.suptitle('Echo Response Time', fontsize=20)
-    plt.gcf().suptitle("Frequencies of Throughput Values" + "(" + suptitle_comment + ")", y=0.98, fontsize=20)
+    plt.gcf().suptitle('[' + rolling_hist_name + '] ' + "Frequencies of Throughput Values" + "(" + suptitle_comment + ")", y=0.98, fontsize=20)
     plt.title(label=echo_code + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
               fontweight='bold')
     plt.xlabel("Throughput (bps)", labelpad=20, fontsize=16)
