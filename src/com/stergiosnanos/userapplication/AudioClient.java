@@ -7,17 +7,13 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AudioClient {
-  AtomicInteger min = new AtomicInteger(0);
-  AtomicInteger max = new AtomicInteger(0);
   private final InetAddress address;
   private final DatagramSocket socket;
   private final int hostPort;
@@ -75,8 +71,8 @@ public class AudioClient {
 
       D2 = d2 * beta;
       D1 = d1 * beta;
-      diffsArray[packetIndex*128*2 + i*2 ] = D1;
-      diffsArray[packetIndex*128*2 + i*2 + 1] = D2;
+      diffsArray[packetIndex * 128 * 2 + i * 2] = D1;
+      diffsArray[packetIndex * 128 * 2 + i * 2 + 1] = D2;
 
       n1 = D1 + lastNibble.get();
       // clip value
@@ -97,11 +93,6 @@ public class AudioClient {
 
       decoded[2 * i] = (byte) n1;
       decoded[2 * i + 1] = (byte) n2;
-
-      if (n1 > max.get() ) max.set(n1);
-      if (n2 > max.get() ) max.set(n2);
-      if (n1 < min.get() ) min.set(n1);
-      if (n2 < min.get() ) min.set(n2);
     }
 
     return decoded;
@@ -138,8 +129,8 @@ public class AudioClient {
 
       D2 = d2 * beta;
       D1 = d1 * beta;
-      diffsArray[packetIndex*128*2 + (i - offset)*2 ] = D1; // todo find a better way accessing diffsArray
-      diffsArray[packetIndex*128*2 + (i - offset)*2 + 1] = D2;
+      diffsArray[packetIndex * 128 * 2 + (i - offset) * 2] = D1; // todo find a better way accessing diffsArray
+      diffsArray[packetIndex * 128 * 2 + (i - offset) * 2 + 1] = D2;
 
       n1 = D1 + lastNibble.get();
 
@@ -150,21 +141,10 @@ public class AudioClient {
       n1 = n1 + mu;
       n2 = n2 + mu;
 
-//      System.out.println("i: " + i + "\t\tn1: " + n1 + "\t\tn2: " + n2);
-
-//      decoded[4 * (i - offset)] = (byte) n1;
-//      decoded[4 * (i - offset) + 1] = (byte) (n1 / 256 > 127 ? 127 : n1 / 256 < -128 ? -128 : n1 / 256);
-//      decoded[4 * (i - offset) + 2] = (byte) n2;
-//      decoded[4 * (i - offset) + 3] = (byte) (n2 / 256 > 127 ? 127 : n2 / 256 < -128 ? -128 : n2 / 256); decoded[4 * (i - offset)] = (byte) n1;
       decoded[4 * (i - offset)] = (byte) n1;
       decoded[4 * (i - offset) + 1] = (byte) (n1 >> 8);
       decoded[4 * (i - offset) + 2] = (byte) n2;
       decoded[4 * (i - offset) + 3] = (byte) (n2 >> 8);
-
-      if (n1 > max.get() ) max.set(n1);
-      if (n2 > max.get() ) max.set(n2);
-      if (n1 < min.get() ) min.set(n1);
-      if (n2 < min.get() ) min.set(n2);
     }
 
     return decoded;
@@ -180,7 +160,6 @@ public class AudioClient {
       case DPCM -> getDPCM();
       case AQDPCM -> getAQDPCM();
     }
-    System.out.println("max = " + max.get() + "min = " + min.get());
   }
 
   private void getDPCM() throws IOException {
@@ -193,7 +172,6 @@ public class AudioClient {
     AtomicInteger lastNibble = new AtomicInteger(0);
 
     for (packetIndex = 0; packetIndex < packetNum; packetIndex++) {
-      System.out.println("Packet DPCM:" + packetIndex);
       socket.receive(packetRcv);
 
       audioBuffer.put(decodeDCPM(packetRcv.getData(), packetRcv.getLength(), lastNibble));
@@ -224,10 +202,9 @@ public class AudioClient {
 
     try (CSVWriter writer = new CSVWriter(new FileWriter(file))) {
       writer.writeNext(header);
-      for (Integer integer: intsArray) {
-        writer.writeNext(new String[] {integer.toString()});
+      for (Integer integer : intsArray) {
+        writer.writeNext(new String[]{integer.toString()});
       }
-      // Convert int[] to String[] and then write it with writeNext()
     }
   }
 
@@ -331,16 +308,16 @@ public class AudioClient {
     audioBuffer = ByteBuffer.allocate(packetNum * 128 * 2 * (codec.getQ() / 8)); // size = [audio packets] * [packet size] * [nibbles] * [quantifier's size in bytes]
   }
 
-  public void setPlaybackDuration(int seconds) {
+  private void setPlaybackDuration(int seconds) {
     if (seconds < 0) seconds = 1;
     this.packetNum = 32 * seconds;
   }
 
-  public void setSampleRate(int sampleRate) {
+  private void setSampleRate(int sampleRate) {
     this.sampleRate = sampleRate;
   }
 
-  public void setCodec(Codec codec) {
+  private void setCodec(Codec codec) {
     this.codec = codec;
   }
 
@@ -350,7 +327,7 @@ public class AudioClient {
 
     AudioFormat audioFormat = new AudioFormat(sampleRate, codec.getQ(), 1, true, false);
     ByteArrayInputStream inputStream = new ByteArrayInputStream(audioBuffer.array());
-    AudioInputStream audioInputStream = new AudioInputStream(inputStream,audioFormat, audioBuffer.limit()/audioFormat.getFrameSize());
+    AudioInputStream audioInputStream = new AudioInputStream(inputStream, audioFormat, audioBuffer.limit() / audioFormat.getFrameSize());
 
     try {
       AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, file);
@@ -370,16 +347,16 @@ public class AudioClient {
     audioBuffer.flip();
     saveAudioAsWAVE(fName);
 
-    saveArrayAsCSV(fName +"_diffs", diffsArray, new String[] {"diffs"});
+    saveArrayAsCSV(fName + "_diffs", diffsArray, new String[]{"diffs"});
     if (codec == Codec.AQDPCM) {
-      saveArrayAsCSV(fName + "_mus", musArray, new String[] {"mus"});
-      saveArrayAsCSV(fName + "_betas", betasArray, new String[] {"betas"});
+      saveArrayAsCSV(fName + "_mus", musArray, new String[]{"mus"});
+      saveArrayAsCSV(fName + "_betas", betasArray, new String[]{"betas"});
     }
 
     return fName;
   }
 
-  public String saveFrequencies(int duration,String fileName) throws IOException {
+  public String saveFrequencies(int duration, String fileName) throws IOException {
     setPlaybackDuration(duration);
     setCodec(Codec.DPCM);
     allocateAudioBuffer(Codec.DPCM);
@@ -389,7 +366,7 @@ public class AudioClient {
     getAudio(codec.getNameAsServerOption() + "T" + String.format("%03d", packetNum));
     audioBuffer.flip();
     saveAudioAsWAVE(fName);
-    saveArrayAsCSV( fName + "_diffs", diffsArray, new String[] {"diffs"});
+    saveArrayAsCSV(fName + "_diffs", diffsArray, new String[]{"diffs"});
 
     return fName;
   }
