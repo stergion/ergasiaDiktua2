@@ -18,6 +18,7 @@ if __name__ == '__main__':
         suptitle_comment = 'without delay'
         latencies = pd.read_csv("./echoClient/echoFast.csv")['latencies']
         times = pd.read_csv("./echoClient/echoFast.csv")['times']
+        rtt = None
     else:
         rt_plot_name = 'G3'
         rolling_plot_name = 'G4'
@@ -26,6 +27,8 @@ if __name__ == '__main__':
         suptitle_comment = 'with delay'
         latencies = pd.read_csv("./echoClient/echoDelay.csv")['latencies']
         times = pd.read_csv("./echoClient/echoDelay.csv")['times']
+        rtt = latencies
+        rtt.name = 'RTT'
 
     packets_per_sec = pd.Series(name='packets_per_sec', index=range(0, times.iloc[-1] // 1000 + 1), data=0)
     throughput = pd.Series(name='bps', index=range(0, times.iloc[-1] // 1000 + 1), data=0)
@@ -51,7 +54,8 @@ if __name__ == '__main__':
 
     packets_per_sec_rolling_df.plot(figsize=(13.07, 5.35), legend=False)
     # plt.suptitle('Echo Response Time', fontsize=20)
-    plt.gcf().suptitle('[' + rolling_plot_name + '] ' + "Throughput" + "(" + suptitle_comment + ")", y=0.98, fontsize=20)
+    plt.gcf().suptitle('[' + rolling_plot_name + '] ' + "Throughput" + "(" + suptitle_comment + ")", y=0.98,
+                       fontsize=20)
     plt.title(label=echo_code + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
               fontweight='bold')
     plt.xlabel("Time (s)", labelpad=20, fontsize=16)
@@ -73,10 +77,48 @@ if __name__ == '__main__':
 
     packets_per_sec_rolling_df.hist(figsize=(13.07, 5.35), legend=False)
     # plt.suptitle('Echo Response Time', fontsize=20)
-    plt.gcf().suptitle('[' + rolling_hist_name + '] ' + "Frequencies of Throughput Values" + "(" + suptitle_comment + ")", y=0.98, fontsize=20)
+    plt.gcf().suptitle(
+        '[' + rolling_hist_name + '] ' + "Frequencies of Throughput Values" + "(" + suptitle_comment + ")", y=0.98,
+        fontsize=20)
     plt.title(label=echo_code + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
               fontweight='bold')
     plt.xlabel("Throughput (bps)", labelpad=20, fontsize=16)
     plt.ylabel("Frequency", labelpad=20, fontsize=16)
     plt.tight_layout()
     plt.show()
+
+    # R1 figure
+    if rtt is not None:
+        alpha = 0.875
+        beta = 0.75
+        gamma = 4
+
+        srtt = pd.Series(index=range(len(rtt)), name='SRTT')
+        sigma_rtt = pd.Series(index=range(len(rtt)), name='σ' +
+                                                          '\N{LATIN SUBSCRIPT SMALL LETTER R}'
+                                                          '\N{LATIN SUBSCRIPT SMALL LETTER T}'
+                                                          '\N{LATIN SUBSCRIPT SMALL LETTER T}')
+        # sigma_rtt = pd.Series(name='\N{GREEK CAPITAL LETTER SIGMA}r\N{SUBSCRIPT RTT}')
+        rto = pd.Series(index=range(len(rtt)), name='RTO')
+
+        srtt.iloc[0] = rtt.iloc[0]
+        sigma_rtt.iloc[0] = abs(srtt.iloc[0] - rtt.iloc[0])
+        rto.iloc[0] = srtt.iloc[0] + gamma * sigma_rtt.iloc[0]
+        for i in range(1, len(rtt)):
+            srtt.iloc[i] = alpha * srtt.iloc[i - 1] + (1 - alpha) * rtt.iloc[i]
+            sigma_rtt[i] = beta * sigma_rtt.iloc[i - 1] + (1 - beta) * abs(srtt.iloc[i] - rtt.iloc[i])
+            rto.iloc[i] = srtt.iloc[i] + gamma * sigma_rtt.iloc[i]
+
+        plt.figure(num=3, figsize=(13.07, 5.35), dpi=250)
+        rtt.plot()
+        srtt.plot()
+        sigma_rtt.plot()
+        rto.plot()
+        plt.legend(loc='best')
+        plt.suptitle('[R1] ', y=0.98, fontsize=20)
+        plt.title(label=echo_code + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
+                  fontweight='bold')
+        plt.xlabel("Packet", labelpad=20, fontsize=16)
+        plt.ylabel("Time (ms)", labelpad=20, fontsize=16)
+        plt.tight_layout()
+        plt.show()
