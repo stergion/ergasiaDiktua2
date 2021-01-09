@@ -55,7 +55,6 @@ public class IthakicopterClient {
     for (int i = 3; i < strings.length - 1; i++) {
       parsedTelemetry.add(strings[i].split("=")[1]);
     }
-//    parsedTelemetry.forEach(System.out::println);
 
     return parsedTelemetry.toArray(new String[0]);
   }
@@ -71,7 +70,6 @@ public class IthakicopterClient {
         startTime = currentTimeMillis();
 
         do {
-//          System.out.println("Ithakicopter: Packet received!");
           outputStream.write((getTelemetry() + lineSeparator()).getBytes());
           duration = currentTimeMillis() - startTime;
         } while (duration < sec * 1000L);
@@ -82,13 +80,12 @@ public class IthakicopterClient {
   }
 
   //  todo saveTelemetryAsCSV
-  public String saveTelemetryAsCSV(int sec) {
+  public String saveTelemetryAsCSV(String fileName, int sec) {
     long startTime, duration;
     String filePath = null;
 
     try {
       Files.createDirectories(Paths.get(directory));
-      String fileName = getFileName("telemetry");
       filePath = directory + "/" + fileName + ".csv";
       File file = new File(filePath);
 
@@ -103,7 +100,6 @@ public class IthakicopterClient {
 
         startTime = currentTimeMillis();
         do {
-//          System.out.println("Ithakicopter: Packet received!");
           writer.writeNext(parseTelemetry(getTelemetry()));
           duration = currentTimeMillis() - startTime;
         } while (duration < sec * 1000L);
