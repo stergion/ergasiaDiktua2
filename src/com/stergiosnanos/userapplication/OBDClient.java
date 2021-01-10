@@ -53,7 +53,6 @@ public class OBDClient {
    * Example (formatted to string):  OBDCLIENT	 2020-12-29T18:48:13	 ENGINE_TIME = 14  sec AIR_TEMP = 12  °C THROTTLE_POS = 17  % ENGINE_RPM = 0  RPM VEHICLE_SPEED = 0  Km/h COOLANT_TEMP = 11  °C
    * */
   public List<String> getTelemetry() {
-//    StringBuilder stringBuilder = new StringBuilder().append("OBDCLIENT\t").append(LocalDateTime.now().withNano(0));
     List<String> stringList = new ArrayList<>(10);
     stringList.add("OBDCLIENT\t");
     stringList.add(LocalDateTime.now().withNano(0).toString() + "\t");
@@ -68,37 +67,36 @@ public class OBDClient {
         socket.send(packetSend);
       } catch (IOException e) {
         e.printStackTrace();
-        System.err.println("Trying to send " + obd.toString().toUpperCase() + "paket");
+        System.err.println("Trying to send " + obd.toString().toUpperCase() + "packet");
       }
 
       try {
         socket.receive(packetRcv);
       } catch (IOException e) {
         e.printStackTrace();
-        System.err.println(obd.toString());
-        System.err.println("While trying to receive " + obd.toString().toUpperCase() + " paket");
+        System.err.println("While trying to receive " + obd.toString().toUpperCase() + " packet");
       }
 
-      String[] strings = new String(packetRcv.getData(), packetRcv.getOffset(), packetRcv.getLength()).substring(6).split(" ");
-//      stringBuilder.append("\t\t").append(obd.name()).append(" = ").append(getResponse(obd, strings)).append(obd.getUnits());
       stringList.add(obd.name());
       stringList.add("=");
-      stringList.add(Integer.toString(getResponse(obd, strings)));
+      stringList.add(Integer.toString(parseResponse(obd, packetRcv)));
       stringList.add(obd.getUnits());
+      if (obd == OBDRequest.ENGINE_TIME) stringList.forEach(System.out::println);
     }
-//    return stringBuilder.toString();
     return stringList;
   }
 
-  public int getResponse(OBDRequest request, String[] s) {
+  private int parseResponse(OBDRequest request, DatagramPacket packetRcv) {
+    String[] strings = new String(packetRcv.getData(), packetRcv.getOffset(), packetRcv.getLength()).split(" ");
+
     final int radix = 16;
     return switch (request) {
-      case ENGINE_TIME -> 256 * Integer.parseInt(s[0], radix) + Integer.parseInt(s[1], radix);
-      case AIR_TEMP -> Integer.parseInt(s[0], radix) - 40;
-      case THROTTLE_POS -> Integer.parseInt(s[0], radix) * 100 / 255;
-      case ENGINE_RPM -> (Integer.parseInt(s[0], radix) * 256 + Integer.parseInt(s[1], radix)) / 4;
-      case VEHICLE_SPEED -> Integer.parseInt(s[0], radix);
-      case COOLANT_TEMP -> Integer.parseInt(s[0], radix) - 40;
+      case ENGINE_TIME -> 256 * Integer.parseInt(strings[2], radix) + Integer.parseInt(strings[3], radix);
+      case AIR_TEMP -> Integer.parseInt(strings[2], radix) - 40;
+      case THROTTLE_POS -> Integer.parseInt(strings[2], radix) * 100 / 255;
+      case ENGINE_RPM -> (Integer.parseInt(strings[2], radix) * 256 + Integer.parseInt(strings[3], radix)) / 4;
+      case VEHICLE_SPEED -> Integer.parseInt(strings[2], radix);
+      case COOLANT_TEMP -> Integer.parseInt(strings[2], radix) - 40;
     };
   }
 
@@ -126,32 +124,43 @@ public class OBDClient {
     return filePath;
   }
 
-  public String saveTelemetryAsCSV(int sec) {
-    long startTime, duration;
-    List<String[]> csvAllLines = new ArrayList<>(50);
+  public String saveTelemetryAsCSV(String fileName, int duration) {
+    int startTime;
     String[] telemetry;
     String[] csvLine = new String[6];
     String filePath = null;
 
     try {
       Files.createDirectories(Paths.get(directory));
-      String fileName = getFileName("telemetry");
-      filePath = directory + "/" + fileName + ".csv";
+      String fName = getFileName(fileName);
+      filePath = directory + "/" + fName + ".csv";
       File file = new File(filePath);
 
       try (CSVWriter writer = new CSVWriter(new FileWriter(file))) {
         writer.writeNext(new String[]{
-                OBDRequest.ENGINE_TIME.name(),
-                OBDRequest.AIR_TEMP.name(),
-                OBDRequest.THROTTLE_POS.name(),
-                OBDRequest.ENGINE_RPM.name(),
-                OBDRequest.VEHICLE_SPEED.name(),
-                OBDRequest.COOLANT_TEMP.name()});
+                OBDRequest.ENGINE_TIME.name() + " (" + OBDRequest.ENGINE_TIME.getUnits().strip() + ")",
+                OBDRequest.AIR_TEMP.name() + " (" + OBDRequest.AIR_TEMP.getUnits().strip() + ")",
+                OBDRequest.THROTTLE_POS.name() + " (" + OBDRequest.THROTTLE_POS.getUnits().strip() + ")",
+                OBDRequest.ENGINE_RPM.name() + " (" + OBDRequest.ENGINE_RPM.getUnits().strip() + ")",
+                OBDRequest.VEHICLE_SPEED.name() + " (" + OBDRequest.VEHICLE_SPEED.getUnits().strip() + ")",
+                OBDRequest.COOLANT_TEMP.name() + " (" + OBDRequest.COOLANT_TEMP.getUnits().strip() + ")"});
 
-        startTime = currentTimeMillis();
         do {
           telemetry = getTelemetry().toArray(new String[0]);
-//          System.out.println(String.join(" ", telemetry));
+        } while (Integer.parseInt(telemetry[4]) + duration > 900);
+
+        csvLine[0] = telemetry[4];
+        csvLine[1] = telemetry[8];
+        csvLine[2] = telemetry[12];
+        csvLine[3] = telemetry[16];
+        csvLine[4] = telemetry[20];
+        csvLine[5] = telemetry[24];
+        writer.writeNext(csvLine);
+
+        startTime = Integer.parseInt(telemetry[4]);
+        do {
+          telemetry = getTelemetry().toArray(new String[0]);
+
           csvLine[0] = telemetry[4];
           csvLine[1] = telemetry[8];
           csvLine[2] = telemetry[12];
@@ -159,11 +168,8 @@ public class OBDClient {
           csvLine[4] = telemetry[20];
           csvLine[5] = telemetry[24];
           writer.writeNext(csvLine);
-//          csvAllLines.add(csvLine);
-          duration = currentTimeMillis() - startTime;
-        } while (duration < sec * 1000L);
 
-//        writer.writeAll(csvAllLines);
+        } while (Integer.parseInt(telemetry[4]) - startTime < duration);
       }
     } catch (IOException e) {
       e.printStackTrace();
