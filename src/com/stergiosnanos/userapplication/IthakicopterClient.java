@@ -92,11 +92,11 @@ public class IthakicopterClient {
       try (CSVWriter writer = new CSVWriter(new FileWriter(file))) {
         writer.writeNext(new String[]{
                 "time",
-                "LMOTOR",
-                "RMOTOR",
-                "ALTITUDE",
-                "TEMPERATURE",
-                "PRESSURE"});
+                "LMOTOR (duty-cycle)",
+                "RMOTOR (duty-cycle)",
+                "ALTITUDE (pixels)",
+                "TEMPERATURE (C)",
+                "PRESSURE (mbar)"});
 
         startTime = currentTimeMillis();
         do {
