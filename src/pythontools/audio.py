@@ -1,6 +1,7 @@
+import argparse
 import datetime as dt
+import os
 import re
-import sys
 
 import librosa
 import librosa.display
@@ -9,6 +10,16 @@ import numpy as np
 import pandas as pd
 
 AUDIO_CODE = '[AUDIO_CODE]'
+global dirPath
+
+
+def get_proper_filename(string):
+    delimiters = ".", " "
+
+    regex_pattern = '|'.join(map(re.escape, delimiters))
+    proper = re.sub(regex_pattern, "_", string)
+
+    return proper
 
 
 def plot_waveplot(samples, sampling_rate, sec, title):
@@ -30,7 +41,10 @@ def plot_waveplot(samples, sampling_rate, sec, title):
     plt.ylabel("Amplitude", labelpad=20, fontsize=16)
     plt.minorticks_on()
     plt.tight_layout()
-    plt.show()
+    fig_filename = get_proper_filename(title) + '.png'
+    plt.savefig(os.path.join(dirPath, fig_filename), format='png')
+    plt.close()
+    # plt.show()
 
 
 def specplot(samples, sampling_rate, title):
@@ -47,7 +61,10 @@ def specplot(samples, sampling_rate, title):
     plt.suptitle(title)
     plt.title(label=AUDIO_CODE + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
               fontweight='bold')
-    plt.show()
+    fig_filename = get_proper_filename(title) + '.png'
+    fig.savefig(os.path.join(dirPath, fig_filename), format='png')
+    plt.close()
+    # plt.show()
 
 
 def histogram(filepath, title=None, data=None, xlabel=None, ylabel=None):
@@ -69,7 +86,10 @@ def histogram(filepath, title=None, data=None, xlabel=None, ylabel=None):
     plt.ylabel(ylabel, labelpad=20, fontsize=16)
     plt.minorticks_on()
     plt.tight_layout()
-    plt.show()
+    fig_filename = get_proper_filename(title) + '.png'
+    plt.savefig(os.path.join(dirPath, fig_filename), format='png')
+    plt.close()
+    # plt.show()
 
 
 def lineplot(filepath, title, xlabel=None, ylabel=None):
@@ -84,7 +104,10 @@ def lineplot(filepath, title, xlabel=None, ylabel=None):
     plt.ylabel(ylabel, labelpad=20, fontsize=16)
     plt.minorticks_on()
     plt.tight_layout()
-    plt.show()
+    fig_filename = get_proper_filename(title) + '.png'
+    plt.savefig(os.path.join(dirPath, fig_filename), format='png')
+    plt.close()
+    # plt.show()
 
 
 def get_file_name(string):
@@ -155,20 +178,39 @@ def bar(a1, a2):
     print(a1, a2)
 
 
-if __name__ == '__main__':
-    i = 0
-    for arg in sys.argv:
-        print(i, arg)
-        i = i + 1
+def main(audio_type, audio_code, file_path1, file_path2=None, wdir: str = None):
+    global dirPath
 
-    if sys.argv[1] == 'AQ-DPCM':
+    if wdir is not None:
+        wdir = wdir.replace('\\', os.sep)
+        wdir = wdir.replace('/', os.sep)
+        print("Current working directory: " + wdir)
+        os.chdir(wdir)
+
+    dirPath = os.path.join(os.getcwd(), 'figures', 'audio')
+    if not os.path.exists(dirPath):
+        print(dirPath)
+        os.makedirs(dirPath)
+    if audio_type == 'AQ-DPCM':
         print('AQ-DPCM figures')
-        aq_dpcm_figures(audio_code=sys.argv[2], file_path1=sys.argv[3], file_path2=sys.argv[4])
-    elif sys.argv[1] == 'DPCM':
+        aq_dpcm_figures(audio_code=audio_code, file_path1=file_path1, file_path2=file_path2)
+    elif audio_type == 'DPCM':
         print('DPCM figures')
-        dpcm_figures(audio_code=sys.argv[2], file_path=sys.argv[3])
-    elif sys.argv[1] == 'freq':
+        dpcm_figures(audio_code=audio_code, file_path=file_path1)
+    elif audio_type == 'freq':
         print('Frequency figures')
-        freq_figures(audio_code=sys.argv[2], file_path=sys.argv[3])
+        freq_figures(audio_code=audio_code, file_path=file_path1)
     else:
         print('Incorrect input!')
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("audio_type", help="audio type", type=str)
+    parser.add_argument("audio_code", help="audio code", type=str)
+    parser.add_argument("file_path1", help="file path 1", type=str)
+    parser.add_argument("-fp2", "--file_path2", help="file path 2", type=str)
+    parser.add_argument("-wdir", help="set working directory", type=str)
+    args = parser.parse_args()
+
+    main(args.audio_type, args.audio_code, args.file_path1, args.file_path2, args.wdir)
