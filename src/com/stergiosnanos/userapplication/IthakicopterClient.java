@@ -2,13 +2,14 @@ package com.stergiosnanos.userapplication;
 
 import com.opencsv.CSVWriter;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,6 +121,10 @@ public class IthakicopterClient {
 
   public void closeSocket() {
     socket.close();
+  }
+
+  public String getCode() {
+    return ithakicopterCode;
   }
 
 /*

@@ -189,4 +189,8 @@ public class OBDClient {
   public void closeSocket() {
     socket.close();
   }
+
+  public String getCode() {
+    return obdCode;
+  }
 }

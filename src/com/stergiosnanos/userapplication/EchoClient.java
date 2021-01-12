@@ -128,6 +128,10 @@ public class EchoClient {
     socket.close();
   }
 
+  public String getCode() {
+    return echoCode;
+  }
+
   public void setDirectory(String directory) {
     this.directory = directory;
   }

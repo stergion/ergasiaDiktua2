@@ -65,4 +65,8 @@ public class ImageClient {
     socket.close();
   }
 
+  public String getCode() {
+    return imageCode;
+  }
+
 }

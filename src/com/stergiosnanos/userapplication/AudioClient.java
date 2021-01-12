@@ -378,4 +378,6 @@ public class AudioClient {
   public void setDirectory(String directory) {
     this.directory = directory;
   }
+
+  public String getCode() {return audioCode;}
 }
