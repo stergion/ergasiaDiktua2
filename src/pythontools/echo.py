@@ -1,15 +1,37 @@
+import argparse
 import datetime as dt
-import sys
+import os
+import re
 
 import matplotlib.pyplot as plt
 import pandas as pd
 
 PACKET_SIZE = 32  # Packet size in bits
+global dirPath
 
-if __name__ == '__main__':
-    directory = 'echoClient'
 
-    echo_code = sys.argv[1]
+def get_proper_filename(string):
+    delimiters = ".", " "
+
+    regex_pattern = '|'.join(map(re.escape, delimiters))
+    proper = re.sub(regex_pattern, "_", string)
+
+    return proper
+
+
+def main(echo_code, wdir: str = None):
+    if wdir is not None:
+        wdir = wdir.replace('\\', os.sep)
+        wdir = wdir.replace('/', os.sep)
+        print("Current working directory: " + wdir)
+        os.chdir(wdir)
+
+    global dirPath
+    dirPath = os.path.join(os.getcwd(), 'figures', 'echo')
+    if not os.path.exists(dirPath):
+        print(dirPath)
+        os.makedirs(dirPath)
+
     if echo_code == 'E0000':
         rt_plot_name = 'G1'
         rolling_plot_name = 'G2'
@@ -36,56 +58,67 @@ if __name__ == '__main__':
     for i in times:
         packets_per_sec.iloc[i // 1000] += 1  # packets received per second
     throughput = packets_per_sec.rmul(PACKET_SIZE)
-
     packets_per_sec_rolling_df = pd.DataFrame(data={'rolling8': throughput.rolling(8).mean()},
                                               index=range(len(throughput)))
 
     # Plots
     plt.figure(num=1, figsize=(13.07, 5.35))
     plt.plot(latencies)
-    plt.suptitle('[' + rt_plot_name + '] ' + 'Echo Response Time' + "(" + suptitle_comment + ")", fontsize=20)
+    title = '[' + rt_plot_name + '] ' + 'Echo Response Time' + "(" + suptitle_comment + ")"
+    plt.suptitle(title, fontsize=20)
     plt.title(label=echo_code + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
               fontweight='bold')
     plt.xlabel("Packet", labelpad=20, fontsize=16)
     plt.ylabel("RT (ms)", labelpad=20, fontsize=16)
     plt.minorticks_on()
     plt.tight_layout()
-    plt.show()
+    fig_filename = get_proper_filename(title) + '.png'
+    plt.savefig(os.path.join(dirPath, fig_filename), format='png')
+    plt.close()
+    # plt.show()
 
     packets_per_sec_rolling_df.plot(figsize=(13.07, 5.35), legend=False)
-    # plt.suptitle('Echo Response Time', fontsize=20)
-    plt.gcf().suptitle('[' + rolling_plot_name + '] ' + "Throughput" + "(" + suptitle_comment + ")", y=0.98,
-                       fontsize=20)
+    title = '[' + rolling_plot_name + '] ' + "Throughput" + "(" + suptitle_comment + ")"
+    plt.gcf().suptitle(title, y=0.98, fontsize=20)
     plt.title(label=echo_code + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
               fontweight='bold')
     plt.xlabel("Time (s)", labelpad=20, fontsize=16)
     plt.ylabel("Throughput (bps)", labelpad=20, fontsize=16)
     plt.tight_layout()
-    plt.show()
+    fig_filename = get_proper_filename(title) + '.png'
+    plt.savefig(os.path.join(dirPath, fig_filename), format='png')
+    plt.close()
+    # plt.show()
 
     # Histograms
     plt.figure(num=2, figsize=(13.07, 5.35))
     plt.hist(latencies, rwidth=0.95)
-    plt.suptitle('[' + rt_hist_name + '] ' + 'Echo Frequencies of RTs' + "(" + suptitle_comment + ")", fontsize=20)
+    title = '[' + rt_hist_name + '] ' + 'Echo Frequencies of RTs' + "(" + suptitle_comment + ")"
+    plt.suptitle(title, fontsize=20)
     plt.title(label=echo_code + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
               fontweight='bold')
     plt.ylabel("RT (ms)", labelpad=20, fontsize=16)
     plt.xlabel("Packets", labelpad=20, fontsize=16)
     plt.minorticks_on()
     plt.tight_layout()
-    plt.show()
+    fig_filename = get_proper_filename(title) + '.png'
+    plt.savefig(os.path.join(dirPath, fig_filename), format='png')
+    plt.close()
+    # plt.show()
 
     packets_per_sec_rolling_df.hist(figsize=(13.07, 5.35), legend=False)
     # plt.suptitle('Echo Response Time', fontsize=20)
-    plt.gcf().suptitle(
-        '[' + rolling_hist_name + '] ' + "Frequencies of Throughput Values" + "(" + suptitle_comment + ")", y=0.98,
-        fontsize=20)
+    title = '[' + rolling_hist_name + '] ' + "Frequencies of Throughput Values" + "(" + suptitle_comment + ")"
+    plt.gcf().suptitle(title, y=0.98, fontsize=20)
     plt.title(label=echo_code + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
               fontweight='bold')
     plt.xlabel("Throughput (bps)", labelpad=20, fontsize=16)
     plt.ylabel("Frequency", labelpad=20, fontsize=16)
     plt.tight_layout()
-    plt.show()
+    fig_filename = get_proper_filename(title) + '.png'
+    plt.savefig(os.path.join(dirPath, fig_filename), format='png')
+    plt.close()
+    # plt.show()
 
     # R1 figure
     if rtt is not None:
@@ -115,10 +148,23 @@ if __name__ == '__main__':
         sigma_rtt.plot()
         rto.plot()
         plt.legend(loc='best')
-        plt.suptitle('[R1] ', y=0.98, fontsize=20)
+        title = '[R1]'
+        plt.suptitle(title, y=0.98, fontsize=20)
         plt.title(label=echo_code + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
                   fontweight='bold')
         plt.xlabel("Packet", labelpad=20, fontsize=16)
         plt.ylabel("Time (ms)", labelpad=20, fontsize=16)
         plt.tight_layout()
-        plt.show()
+        fig_filename = get_proper_filename(title) + '.png'
+        plt.savefig(os.path.join(dirPath, fig_filename), format='png')
+        plt.close()
+        # plt.show()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("echo_code", help="echo code", type=str)
+    parser.add_argument("-wdir", help="set working directory", type=str)
+    args = parser.parse_args()
+
+    main(args.echo_code, args.wdir)
