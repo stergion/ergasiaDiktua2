@@ -29,23 +29,23 @@ def main(echo_code, wdir: str = None):
     global dirPath
     dirPath = os.path.join(os.getcwd(), 'figures', 'echo')
     if not os.path.exists(dirPath):
-        print(dirPath)
         os.makedirs(dirPath)
+        # print(dirPath)
 
     if echo_code == 'E0000':
-        rt_plot_name = 'G1'
-        rolling_plot_name = 'G2'
-        rt_hist_name = 'G5'
-        rolling_hist_name = 'G6'
+        rt_plot_name = 'G3'
+        rolling_plot_name = 'G4'
+        rt_hist_name = 'G7'
+        rolling_hist_name = 'G8'
         suptitle_comment = 'without delay'
         latencies = pd.read_csv("./echoClient/echoFast.csv")['latencies']
         times = pd.read_csv("./echoClient/echoFast.csv")['times']
         rtt = None
     else:
-        rt_plot_name = 'G3'
-        rolling_plot_name = 'G4'
-        rt_hist_name = 'G7'
-        rolling_hist_name = 'G8'
+        rt_plot_name = 'G1'
+        rolling_plot_name = 'G2'
+        rt_hist_name = 'G5'
+        rolling_hist_name = 'G6'
         suptitle_comment = 'with delay'
         latencies = pd.read_csv("./echoClient/echoDelay.csv")['latencies']
         times = pd.read_csv("./echoClient/echoDelay.csv")['times']
