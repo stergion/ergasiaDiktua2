@@ -189,16 +189,20 @@ def main(audio_type, audio_code, file_path1, file_path2=None, wdir: str = None):
 
     dirPath = os.path.join(os.getcwd(), 'figures', 'audio')
     if not os.path.exists(dirPath):
-        print(dirPath)
         os.makedirs(dirPath)
+        # print(dirPath)
     if audio_type == 'AQ-DPCM':
         print('AQ-DPCM figures')
+        file_path1 = file_path1.replace('\\', '/')
+        file_path2 = file_path2.replace('\\', '/')
         aq_dpcm_figures(audio_code=audio_code, file_path1=file_path1, file_path2=file_path2)
     elif audio_type == 'DPCM':
         print('DPCM figures')
+        file_path1 = file_path1.replace('\\', '/')
         dpcm_figures(audio_code=audio_code, file_path=file_path1)
     elif audio_type == 'freq':
         print('Frequency figures')
+        file_path1 = file_path1.replace('\\', '/')
         freq_figures(audio_code=audio_code, file_path=file_path1)
     else:
         print('Incorrect input!')
