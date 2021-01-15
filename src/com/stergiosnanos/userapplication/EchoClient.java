@@ -65,7 +65,7 @@ public class EchoClient {
     return echo(String.format("T%02d", station));
   }
 
-  public void echoTime(int sec, boolean isFast) throws IOException {
+  public String echoTime(int sec, boolean isFast) throws IOException {
     long loopStart, timerStart, timerStop;
     long usec = sec * 1000L;
     String fileName;
@@ -94,8 +94,10 @@ public class EchoClient {
       numPackets++;
     } while (System.currentTimeMillis() - loopStart < usec);
 
-    saveAsCSV(fileName, latencies, times);
+    String filepath = saveAsCSV(fileName, latencies, times);
     System.out.println("Echo Packets Received: " + numPackets);
+
+    return filepath;
   }
 
 /*
@@ -110,17 +112,18 @@ public class EchoClient {
   }
 */
 
-  private void saveAsCSV(String fileName, ArrayList<Long> latencies, ArrayList<Long> times) throws IOException {
+  private String saveAsCSV(String fileName, ArrayList<Long> latencies, ArrayList<Long> times) throws IOException {
     Files.createDirectories(Paths.get(directory));
-    File file = new File(directory + "/" + fileName + ".csv");
+    File filePath = new File(directory + "/" + fileName + ".csv");
 
-    try (CSVWriter writer = new CSVWriter(new FileWriter(file))) {
+    try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
       writer.writeNext(new String[]{"latencies", "times"});
 
       for (int i = 0; i < latencies.size(); i++) {
         writer.writeNext(new String[]{latencies.get(i).toString(), times.get(i).toString()});
       }
     }
+    return filePath.toString();
   }
 
 

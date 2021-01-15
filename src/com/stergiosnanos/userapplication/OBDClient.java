@@ -81,7 +81,7 @@ public class OBDClient {
       stringList.add("=");
       stringList.add(Integer.toString(parseResponse(obd, packetRcv)));
       stringList.add(obd.getUnits());
-      if (obd == OBDRequest.ENGINE_TIME) stringList.forEach(System.out::println);
+//      if (obd == OBDRequest.ENGINE_TIME) stringList.forEach(System.out::println);
     }
     return stringList;
   }

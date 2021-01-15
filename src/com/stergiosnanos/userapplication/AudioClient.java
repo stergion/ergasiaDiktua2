@@ -321,7 +321,7 @@ public class AudioClient {
     this.codec = codec;
   }
 
-  private void saveAudioAsWAVE(String fileName) throws IOException {
+  private String saveAudioAsWAVE(String fileName) throws IOException {
     Files.createDirectories(Paths.get(directory));
     File file = new File(directory + "/" + fileName + ".wav");
 
@@ -334,6 +334,7 @@ public class AudioClient {
     } catch (IOException e) {
       e.printStackTrace();
     }
+    return file.toString();
   }
 
   public String saveTrack(int trackNumber, int duration, Codec codec, String fileName) throws IOException {
@@ -345,7 +346,7 @@ public class AudioClient {
 
     getAudio(codec.getNameAsServerOption() + "L" + String.format("%02d", trackNumber) + "F" + String.format("%03d", packetNum));
     audioBuffer.flip();
-    saveAudioAsWAVE(fName);
+    String filepath = saveAudioAsWAVE(fName);
 
     saveArrayAsCSV(fName + "_diffs", diffsArray, new String[]{"diffs"});
     if (codec == Codec.AQDPCM) {
@@ -353,7 +354,7 @@ public class AudioClient {
       saveArrayAsCSV(fName + "_betas", betasArray, new String[]{"betas"});
     }
 
-    return fName;
+    return filepath;
   }
 
   public String saveFrequencies(int duration, String fileName) throws IOException {
@@ -365,10 +366,10 @@ public class AudioClient {
 
     getAudio(codec.getNameAsServerOption() + "T" + String.format("%03d", packetNum));
     audioBuffer.flip();
-    saveAudioAsWAVE(fName);
+    String filepath = saveAudioAsWAVE(fName);
     saveArrayAsCSV(fName + "_diffs", diffsArray, new String[]{"diffs"});
 
-    return fName;
+    return filepath;
   }
 
   public void closeSocket() {
