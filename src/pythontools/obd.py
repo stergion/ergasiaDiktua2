@@ -59,8 +59,8 @@ def main(obd_code, file_path, wdir: str = None):
 
     dirPath = os.path.join(os.getcwd(), 'figures', 'obd')
     if not os.path.exists(dirPath):
-        print(dirPath)
         os.makedirs(dirPath)
+        # print(dirPath)
 
     plot(file_path, title='Vehicle OBD-II Telemetry Data')
 

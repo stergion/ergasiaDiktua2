@@ -50,10 +50,10 @@ def main(ithakicopter_code, file_path1, file_path2, wdir: str = None):
         os.chdir(wdir)
 
     dirPath = os.path.join(os.getcwd(), 'figures', 'ithakicopter')
-    print(dirPath)
+    # print(dirPath)
     if not os.path.exists(dirPath):
-        print(dirPath)
         os.makedirs(dirPath)
+        # print(dirPath)
     plot(file_path1, title='[G19] Ithakicopter Telemetry Data', xlabel='Time (s)')
     plot(file_path2, title='[G20] Ithakicopter Telemetry Data', xlabel='Time (s)')
 
