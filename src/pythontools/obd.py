@@ -62,7 +62,7 @@ def main(obd_code, file_path, wdir: str = None):
         os.makedirs(dirPath)
         # print(dirPath)
 
-    plot(file_path, title='Vehicle OBD-II Telemetry Data')
+    plot(file_path, title='[G21] Vehicle OBD-II Telemetry Data')
 
 
 if __name__ == '__main__':

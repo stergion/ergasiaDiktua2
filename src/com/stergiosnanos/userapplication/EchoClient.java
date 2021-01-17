@@ -80,7 +80,7 @@ public class EchoClient {
       setEchoDelay();
       fileName = "echoDelay";
     }
-    System.out.printf("echo %s fast%n", isEchoFast()?"IS":"is NOT");
+    System.out.printf("echo %s fast%n", isEchoFast() ? "IS" : "is NOT");
 
 
     loopStart = System.currentTimeMillis();
@@ -99,18 +99,6 @@ public class EchoClient {
 
     return filepath;
   }
-
-/*
-  public void echoTimeFast(int sec) throws IOException {
-    long timeStart = System.currentTimeMillis();
-    long usec = sec * 1000L;
-    int i = 0;
-
-    do {
-      System.out.println("EchoClient: " + i++ + " - " + echo("E0000"));
-    } while (System.currentTimeMillis() - timeStart < usec);
-  }
-*/
 
   private String saveAsCSV(String fileName, ArrayList<Long> latencies, ArrayList<Long> times) throws IOException {
     Files.createDirectories(Paths.get(directory));

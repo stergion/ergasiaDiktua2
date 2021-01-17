@@ -11,17 +11,14 @@ import java.util.List;
 
 import static java.lang.System.exit;
 
-/* TODO Clean up code */
-
 public class UserApplication {
 
+  private static final Path workingDir = Paths.get(System.getProperty("user.dir"));
   private static EchoClient echoClient;
   private static ImageClient imageClient;
   private static AudioClient audioClient;
   private static OBDClient obdClient;
   private static IthakicopterClient ithakicopter;
-  private static final Path workingDir = Paths.get(System.getProperty("user.dir"));
-
 
   public static void main(String[] args) {
 
@@ -33,8 +30,6 @@ public class UserApplication {
     String audioCode = args[4];
     String ithakicopterCode = args[5];
     String obdCode = args[6];
-
-
 
 
     // ============================ Echo Client ==========================================
@@ -92,7 +87,6 @@ public class UserApplication {
 
     echoClient.closeSocket();
 
-
     // ============================ Image Client ==========================================
     try {
       imageClient = new ImageClient(imageCode, hostName, hostPort, localPort);
@@ -128,7 +122,6 @@ public class UserApplication {
     imageClient.closeSocket();
 
     // ============================ Audio Client ==========================================
-    String audioFile;
     try {
       audioClient = new AudioClient(audioCode, hostName, hostPort, localPort);
     } catch (UnknownHostException | SocketException e) {
@@ -178,7 +171,6 @@ public class UserApplication {
 
     obdClient.closeSocket();
     System.out.println("OBD finished!\n");
-
   }
 
   private static void audioClientStart(String audioType) {

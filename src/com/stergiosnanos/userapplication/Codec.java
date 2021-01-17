@@ -3,7 +3,7 @@ package com.stergiosnanos.userapplication;
 public enum Codec {
   AQDPCM("AQ-DPCM", "AQ", 16),
   DPCM("DPCM", "", 8);
-  
+
   private final String name;
   private final String nameAsServerOption;
   private final int Q;

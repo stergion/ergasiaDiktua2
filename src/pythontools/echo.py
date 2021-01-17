@@ -5,9 +5,41 @@ import re
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import scipy.stats as st
 
-PACKET_SIZE = 32  # Packet size in bits
+PACKET_SIZE = 32.0  # Packet size in bits
 global dirPath
+
+
+def get_best_distribution(data, data_name):
+    dist_names = ["norm", "exponweib", "weibull_max", "weibull_min", "pareto", "genextreme", "erlang", "expon", "gamma",
+                  "lognorm", "maxwell"]
+    dist_results = []
+    dist_results_df = pd.DataFrame()
+    params = {}
+    for dist_name in dist_names:
+        dist = getattr(st, dist_name)
+        param = dist.fit(data)
+
+        params[dist_name] = param
+        # Applying the Kolmogorov-Smirnov test
+        D, p = st.kstest(data, dist_name, args=param)
+        print("p value for " + dist_name + " = " + str(p))
+        dist_results.append((dist_name, p))
+        dist_results_df = dist_results_df.append({'dist_name': dist_name,
+                                                  'p': p}, ignore_index=True)
+
+    # select the best fitted distribution
+    print(dist_results_df.sort_values(by='p'))
+    best_dist, best_p = (max(dist_results, key=lambda item: item[1]))
+    # store the name of the best fit and its p value
+
+    print(data_name)
+    print("Best fitting distribution: " + str(best_dist))
+    print("Best p value: " + str(best_p))
+    print("Parameters for the best fit: " + str(params[best_dist]))
+
+    # return best_dist, best_p, params[best_dist]
 
 
 def get_proper_filename(string):
@@ -52,12 +84,17 @@ def main(echo_code, wdir: str = None):
         rtt = latencies
         rtt.name = 'RTT'
 
-    packets_per_sec = pd.Series(name='packets_per_sec', index=range(0, times.iloc[-1] // 1000 + 1), data=0)
-    throughput = pd.Series(name='bps', index=range(0, times.iloc[-1] // 1000 + 1), data=0)
+    packets_per_sec = pd.Series(name='packets_per_sec', index=range(0, times.iloc[-1] // 1000 + 1), data=0.0)
 
+    print("*************************")
+    print(echo_code)
+    print("mean: " + str(latencies.mean()))
+    print("std: " + str(latencies.std()))
+    print("*************************")
     for i in times:
-        packets_per_sec.iloc[i // 1000] += 1  # packets received per second
+        packets_per_sec.iloc[i // 1000] += 1.0  # packets received per second
     throughput = packets_per_sec.rmul(PACKET_SIZE)
+
     packets_per_sec_rolling_df = pd.DataFrame(data={'rolling8': throughput.rolling(8).mean()},
                                               index=range(len(throughput)))
 
@@ -97,13 +134,14 @@ def main(echo_code, wdir: str = None):
     plt.suptitle(title, fontsize=20)
     plt.title(label=echo_code + " - " + dt.datetime.now().isoformat(sep=' ', timespec='minutes'), fontsize=10,
               fontweight='bold')
-    plt.ylabel("RT (ms)", labelpad=20, fontsize=16)
-    plt.xlabel("Packets", labelpad=20, fontsize=16)
+    plt.xlabel("RT (ms)", labelpad=20, fontsize=16)
+    plt.ylabel("Packets", labelpad=20, fontsize=16)
     plt.minorticks_on()
     plt.tight_layout()
     fig_filename = get_proper_filename(title) + '.png'
     plt.savefig(os.path.join(dirPath, fig_filename), format='png')
     plt.close()
+    # get_best_distribution(latencies, title)
     # plt.show()
 
     packets_per_sec_rolling_df.hist(figsize=(13.07, 5.35), legend=False)

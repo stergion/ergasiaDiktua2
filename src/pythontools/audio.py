@@ -48,9 +48,7 @@ def plot_waveplot(samples, sampling_rate, sec, title):
 
 
 def specplot(samples, sampling_rate, title):
-    # samples, sampling_rate = librosa.load(file_path, sr=None, mono=True, offset=0.0, duration=None)
-    n = len(samples)
-    hop_length = 1024 * 1
+    hop_length = 1024 * 4
     print(sampling_rate)
 
     D = librosa.amplitude_to_db(np.abs(librosa.stft(samples, hop_length=hop_length)), ref=np.max)

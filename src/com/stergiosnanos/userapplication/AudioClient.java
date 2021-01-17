@@ -380,5 +380,7 @@ public class AudioClient {
     this.directory = directory;
   }
 
-  public String getCode() {return audioCode;}
+  public String getCode() {
+    return audioCode;
+  }
 }

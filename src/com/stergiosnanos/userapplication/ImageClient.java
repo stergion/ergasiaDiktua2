@@ -12,8 +12,8 @@ public class ImageClient {
   private final DatagramSocket socket;
   private final int hostPort;
   private final int localPort;
-  private byte[] buffer;
   private final String directory;
+  private byte[] buffer;
 
   public ImageClient(String echoCode, String host, int hostPort) throws UnknownHostException, SocketException {
     this(echoCode, host, hostPort, 0);
